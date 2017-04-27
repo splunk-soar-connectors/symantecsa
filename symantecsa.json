@@ -1,0 +1,94 @@
+{
+  "appid": "56ab5a6c-760a-463f-8e1d-8b29db1c1df4",
+  "name": "Symantec Security Analytics",
+  "description": "This app allows querying network traffic details on Symantec Security Analytics (formerly known as <b>BlueCoat Solera</b>) with actions such as <b>get pcap</b>.",
+  "publisher": "Phantom",
+  "type": "investigative",
+  "main_module": "symantecsa_connector.pyc",
+    "app_version": "1.0.4",
+    "utctime_updated": "2017-02-13T22:59:38.000000Z",
+  "package_name": "phantom_symantecsa",
+  "product_vendor": "Symantec",
+  "product_name": "Security Analytics",
+  "product_version_regex": "7.2.*",
+  "min_phantom_version": "2.0.264",
+  "logo": "symantecsa.png",
+  "license": "Copyright (c) Phantom Cyber Corporation 2016-2017",
+  "configuration": {
+    "device_ip": {
+      "description": "Device IP, e.g. 1.2.3.4",
+      "order": 0,
+      "data_type": "string",
+      "required": true
+    },
+    "username": {
+      "description": "Username",
+      "order": 1,
+      "data_type": "string",
+      "required": true
+    },
+    "api_key": {
+      "description": "API key",
+      "order": 2,
+      "data_type": "string",
+      "required": true
+    },
+    "verify_server_cert": {
+      "data_type": "boolean",
+      "description": "Verify server certificate",
+      "required": true,
+      "order": 3,
+      "default": true
+    }
+  },
+  "actions": [
+    {
+      "action": "test connectivity",
+      "description": "Validate the asset configuration for connectivity",
+      "type": "test",
+      "identifier": "test_connectivity",
+      "read_only": true,
+      "parameters": {},
+      "output": [],
+      "render": {},
+      "versions": "EQ(*)"
+    },
+    {
+      "action": "get pcap",
+      "description": "Queries to return specific network traffic information",
+      "verbose": "This action will create a pcap file of network data and upload it to the vault.  Timespan must be in specified format.  The filter must be in the format of a BPF expression (i.e. (!port 514) to exclude syslog traffic, (host 192.168.35.56) to include traffic to and from 192.168.35.36).  Please note that the <b>name</b> must be unique.  If a vault file is detected to have the same name as the one provided in the <b>name</b> parameter, then the vault file will be detected as a duplicate, and will not be added.",
+      "type": "investigate",
+      "identifier": "get_packet_details",
+      "read_only": true,
+      "parameters": {
+        "start_time": {
+          "description": "Start of timespan (YYYY-mm-ddTHH:MM:SSZ)",
+          "order": 0,
+          "data_type": "string",
+          "required": true
+        },
+        "end_time": {
+          "description": "End of timespan (YYYY-mm-ddTHH:MM:SSZ)",
+          "order": 1,
+          "data_type": "string",
+          "required": true
+        },
+        "name": {
+          "description": "Name for PCAP file to be downloaded",
+          "order": 2,
+          "data_type": "string",
+          "required": true
+        },
+        "filter": {
+          "description": "Capture filter to apply to PCAP",
+          "order": 3,
+          "data_type": "string",
+          "required": true
+        }
+      },
+      "render": {},
+      "output": [],
+      "versions": "EQ(*)"
+    }
+  ]
+}
