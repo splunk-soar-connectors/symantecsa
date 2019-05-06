@@ -1,8 +1,8 @@
 {
   "appid": "56ab5a6c-760a-463f-8e1d-8b29db1c1df4",
   "name": "Symantec Security Analytics",
-  "description": "This app allows querying network traffic details on Symantec Security Analytics (formerly known as <b>BlueCoat Solera</b>) with actions such as <b>get pcap</b>.",
-  "publisher": "Phantom",
+  "description": "This app allows querying network traffic details on Symantec Security Analytics (formerly known as <b>BlueCoat Solera</b>) with actions such as <b>get pcap</b>",
+  "publisher": "Splunk",
   "type": "investigative",
   "main_module": "symantecsa_connector.pyc",
   "app_version": "1.0.8",
@@ -11,9 +11,10 @@
   "product_vendor": "Symantec",
   "product_name": "Security Analytics",
   "product_version_regex": "7.2.*",
-  "min_phantom_version": "2.0.264",
-  "logo": "symantecsa.png",
-  "license": "Copyright (c) Phantom Cyber Corporation 2016-2017",
+  "min_phantom_version": "4.0.1068",
+  "logo": "logo_symantecsa.svg",
+  "logo_dark": "logo_symantecsa_dark.svg",
+  "license": "Copyright (c) 2019 Splunk Inc.",
   "configuration": {
     "device_ip": {
       "description": "Device IP, e.g. 1.2.3.4",
@@ -30,7 +31,7 @@
     "api_key": {
       "description": "API key",
       "order": 2,
-      "data_type": "string",
+      "data_type": "password",
       "required": true
     },
     "verify_server_cert": {

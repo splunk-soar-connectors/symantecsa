@@ -1,14 +1,10 @@
 # --
 # File: symantecsa_connector.py
 #
-# Copyright (c) Phantom Cyber Corporation, 2016-2017
+# Copyright (c) 2019 Splunk Inc.
 #
-# This unpublished material is proprietary to Phantom Cyber.
-# All rights reserved. The methods and
-# techniques described herein are considered trade secrets
-# and/or confidential. Reproduction or distribution, in whole
-# or in part, is forbidden except by express written permission
-# of Phantom Cyber.
+# SPLUNK CONFIDENTIAL - Use or disclosure of this material in whole or in part
+# without a valid written license from Splunk Inc. is PROHIBITED.
 #
 # --
 
@@ -23,7 +19,7 @@ from symantecsa_consts import *
 
 import requests
 import simplejson as json
-import SoleraConnector as solera
+import soleraconnector as solera
 
 
 class SymantecsaConnector(BaseConnector):
