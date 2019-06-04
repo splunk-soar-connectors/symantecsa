@@ -20,6 +20,7 @@ from symantecsa_consts import *
 import requests
 import simplejson as json
 import soleraconnector as solera
+import datetime
 
 
 class SymantecsaConnector(BaseConnector):
@@ -59,12 +60,11 @@ class SymantecsaConnector(BaseConnector):
         url = "https://" + self._device_ip + SYMANTECSA_ENDPOINT_BASE_URI + endpoint
         if test:
             url = endpoint
-        r = requests.get(url, auth=self._auth, verify=self._verify, data=data)
         try:
+            r = requests.get(url, auth=self._auth, verify=self._verify, data=data)
             resp_json = r.json()
         except:
-            action_result.set_message("Error parsing response to JSON.  Reason: {}".format(r.text))
-            return (phantom.APP_ERROR)
+            return (action_result.set_status(phantom.APP_ERROR, "Error parsing response to JSON."), {})
         return (phantom.APP_SUCCESS, resp_json)
 
     def _test_connectivity(self):
@@ -83,7 +83,7 @@ class SymantecsaConnector(BaseConnector):
         # Make the rest endpoint call
         ret_val, response = self._make_rest_call(action_result, endpoint, test=True)
         # Process errors
-        if (phantom.is_fail(ret_val)) or response.get('ResultCode') != API_SUCCESS_CODE:
+        if phantom.is_fail(ret_val) or response.get('resultCode') != 'API_SUCCESS_CODE':
             # Dump error messages in the log
             self.debug_print(action_result.get_message())
             # Set the status of the complete connector result
@@ -108,6 +108,14 @@ class SymantecsaConnector(BaseConnector):
         end_time = params[SYMANTECSA_ACTION_PARAM_END_TIME]
         name = params[SYMANTECSA_ACTION_PARAM_NAME]
         filter = params[SYMANTECSA_ACTION_PARAM_FILTER]
+
+        # validation for start time and end time
+        try:
+            isinstance(datetime.datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%SZ"), datetime.datetime)
+            isinstance(datetime.datetime.strptime(end_time, "%Y-%m-%dT%H:%M:%SZ"), datetime.datetime)
+        except:
+            return action_result.set_status(phantom.APP_ERROR, "Please provide time in '%Y-%m-%dT%H:%M:%SZ' format")
+
         kwargs = {
             "download": {
                 "mountId": [],
@@ -128,9 +136,21 @@ class SymantecsaConnector(BaseConnector):
             },
             "url_auth_web_service_routes": True
         }
-        resp = self._connector.callAPI('GET', SYMANTECSA_ENDPOINT_GET_PACKET_DETAILS, kwargs,
+
+        # Vault support for NRI instances.
+        if hasattr(Vault, 'get_vault_tmp_dir'):
+            temp_dir = Vault.get_vault_tmp_dir() + '/{}'.format(name)
+            resp = self._connector.callAPI('GET', SYMANTECSA_ENDPOINT_GET_PACKET_DETAILS, kwargs, temp_dir)
+            try:
+                Vault.add_attachment(temp_dir, container_id=self.get_container_id(), file_name=name)
+            except Exception as e:
+                return action_result.set_status(phantom.APP_ERROR, "Unable to add file to the vault for attachment. Error: {}".format(str(e)))
+
+        else:
+            resp = self._connector.callAPI('GET', SYMANTECSA_ENDPOINT_GET_PACKET_DETAILS, kwargs,
                                        SYMANTECSA_PCAP_FILE_DOWNLOAD_LOCATION.format(NAME=name))
-        Vault.add_attachment(SYMANTECSA_PCAP_FILE_DOWNLOAD_LOCATION.format(NAME=name), self.get_container_id())
+            Vault.add_attachment(SYMANTECSA_PCAP_FILE_DOWNLOAD_LOCATION.format(NAME=name), self.get_container_id())
+
         action_result.add_data(resp)
         return action_result.set_status(phantom.APP_SUCCESS, SYMANTECSA_GET_PCAP_SUCCESS)
 

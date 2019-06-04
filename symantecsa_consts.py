@@ -36,8 +36,6 @@ SYMANTECSA_GET_PCAP_SUCCESS = "PCAP file written to vault successfully"
 # PCAP file download location
 SYMANTECSA_PCAP_FILE_DOWNLOAD_LOCATION = "/vault/tmp/{NAME}.pcap"
 
-API_SUCCESS_CODE = 200
-
 # Test Connectivity Errors
 SYMANTECSA_TEST_CONNECTIVITY_ERROR = "Error connecting to Symantec Security Analytics.  Please check your credentials and try again"
 SYMANTECSA_TEST_CONNECTIVITY_PROGRESS = "Making a test REST call"
