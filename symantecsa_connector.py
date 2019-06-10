@@ -21,6 +21,7 @@ import requests
 import simplejson as json
 import soleraconnector as solera
 import datetime
+import os
 
 
 class SymantecsaConnector(BaseConnector):
@@ -43,8 +44,10 @@ class SymantecsaConnector(BaseConnector):
         self._device_ip = config[SYMANTECSA_CONFIG_DEVICE_IP]
         self._verify = config[phantom.APP_JSON_VERIFY]
         self._auth = (self._username, self._apikey)
-        self._connector = solera.SoleraConnector(self._username, self._apikey,
-                                                 self._device_ip, SYMANTECSA_API_VERSION)
+        try:
+            self._connector = solera.SoleraConnector(self._username, self._apikey, self._device_ip, SYMANTECSA_API_VERSION)
+        except Exception as e:
+            self.set_status(phantom.APP_ERROR, e)
         return phantom.APP_SUCCESS
 
     def _make_rest_call(self, action_result, endpoint, data={}, test=False):
@@ -57,14 +60,14 @@ class SymantecsaConnector(BaseConnector):
         :return: True or False, and Error Message or response result
         '''
         # V6 is needed for the updated download query
-        url = "https://" + self._device_ip + SYMANTECSA_ENDPOINT_BASE_URI + endpoint
+        url = "https://{}{}{}".format(self._device_ip, SYMANTECSA_ENDPOINT_BASE_URI, endpoint)
         if test:
             url = endpoint
         try:
             r = requests.get(url, auth=self._auth, verify=self._verify, data=data)
             resp_json = r.json()
         except:
-            return (action_result.set_status(phantom.APP_ERROR, "Error parsing response to JSON."), {})
+            return (action_result.set_status(phantom.APP_ERROR, "Error parsing response to JSON"), None)
         return (phantom.APP_SUCCESS, resp_json)
 
     def _test_connectivity(self):
@@ -73,7 +76,7 @@ class SymantecsaConnector(BaseConnector):
         # Progress
         self.save_progress(SYMANTECSA_TEST_CONNECTIVITY_START, base_url=self._device_ip)
         # set the endpoint
-        endpoint = 'https://' + self._device_ip + SYMANTECSA_ENDPOINT_TEST_CONNECTIVITY
+        endpoint = 'https://{}{}'.format(self._device_ip, SYMANTECSA_ENDPOINT_TEST_CONNECTIVITY)
         # Connectivity
         self.save_progress(phantom.APP_PROG_CONNECTING_TO_ELLIPSES, endpoint)
         # Action result to represent the call
@@ -83,13 +86,15 @@ class SymantecsaConnector(BaseConnector):
         # Make the rest endpoint call
         ret_val, response = self._make_rest_call(action_result, endpoint, test=True)
         # Process errors
-        if phantom.is_fail(ret_val) or response.get('resultCode') != 'API_SUCCESS_CODE':
+        if phantom.is_fail(ret_val) or ((not response) and response.get('resultCode') != 'API_SUCCESS_CODE'):
             # Dump error messages in the log
             self.debug_print(action_result.get_message())
             # Set the status of the complete connector result
             self.set_status(phantom.APP_ERROR, action_result.get_message())
             # Append the message to display
             self.append_to_message(SYMANTECSA_TEST_CONNECTIVITY_ERROR)
+            # Set the status of the connector result
+            self.save_progress("Test Connectivity failed")
             # return error
             return phantom.APP_ERROR
         # Set the status of the connector result
@@ -106,61 +111,121 @@ class SymantecsaConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(params)))
         start_time = params[SYMANTECSA_ACTION_PARAM_START_TIME]
         end_time = params[SYMANTECSA_ACTION_PARAM_END_TIME]
-        name = params[SYMANTECSA_ACTION_PARAM_NAME]
+        name = params[SYMANTECSA_ACTION_PARAM_FILENAME]
         filter = params[SYMANTECSA_ACTION_PARAM_FILTER]
 
         # validation for start time and end time
         try:
-            isinstance(datetime.datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%SZ"), datetime.datetime)
-            isinstance(datetime.datetime.strptime(end_time, "%Y-%m-%dT%H:%M:%SZ"), datetime.datetime)
+            start = datetime.datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%S")
+            end = datetime.datetime.strptime(end_time, "%Y-%m-%dT%H:%M:%S")
         except:
-            return action_result.set_status(phantom.APP_ERROR, "Please provide time in '%Y-%m-%dT%H:%M:%SZ' format")
+            return action_result.set_status(phantom.APP_ERROR, SYMANTECSA_TIME_FORMAT_ERROR)
+
+        # validation for incorrect timespan
+        now = datetime.datetime.now()
+        if start >= end:
+            return action_result.set_status(phantom.APP_ERROR, SYMANTECSA_TIME_RANGE_ERROR)
+        if start > now:
+            return action_result.set_status(phantom.APP_ERROR, SYMANTECSA_TIME_RANGE_ERROR)
+
+        path = '/timespan/{start_time}_{end_time}'.format(start_time=start_time, end_time=end_time)
+
+        # Add custom_query to path
+        if filter[0] != '/':
+            return action_result.set_status(phantom.APP_ERROR, SYMANTECSA_FILTER_ERROR)
+        custom_query = filter.replace('\\', '/')
+        path = '{path}{custom_query}/'.format(path=path, custom_query=custom_query)
+
+        # adding run timestamp in filename
+        name = "{filename} {timestamp}".format(filename=name,
+                timestamp=datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%dT%H:%M:%S"))
 
         kwargs = {
-            "download": {
-                "mountId": [],
-                "type": "browser"
-            },
-            "download_flag": "pcap",
-            "download_type": 1,
-            "filter": filter,
-            "method": "query",
-            "mount_id": [],
-            "name": name,
-            "pcapType": "pcap",
-            "progress": False,
-            "query": [],
-            "timespan": {
-                "end": end_time,
-                "start": start_time
-            },
-            "url_auth_web_service_routes": True
+            'path': path,
+            'name': name
         }
 
         # Vault support for NRI instances.
         if hasattr(Vault, 'get_vault_tmp_dir'):
-            temp_dir = Vault.get_vault_tmp_dir() + '/{}'.format(name)
-            resp = self._connector.callAPI('GET', SYMANTECSA_ENDPOINT_GET_PACKET_DETAILS, kwargs, temp_dir)
+            temp_dir = "{}/{}".format(Vault.get_vault_tmp_dir(), name)
+            try:
+                resp = self._connector.callAPI('GET', SYMANTECSA_ENDPOINT_GET_PACKET_DETAILS, kwargs, temp_dir)
+            except Exception as e:
+                return action_result.set_status(phantom.APP_ERROR, "Error : {}".format(str(e)))
+            # if got some internal server error
+            if resp.get('resultCode') and resp.get('resultCode') != 'API_SUCCESS_CODE':
+                resultCode = resp.get('resultCode')
+                errorList = resp.get('errors')
+                errorMsg = " ".join(str(x) for x in errorList)
+                return action_result.set_status(phantom.APP_ERROR, "Result Code: {}. Error: {} Please provide valid input(s)".format(resultCode, errorMsg))
+
+            # if not get the filepath in response
+            file_path = resp.get('download_file')
+            if not file_path:
+                return action_result.set_status(phantom.APP_ERROR, "Unable to find download path")
+
+            ret_val = self.is_empty_file(file_path, action_result)
+
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
             try:
                 Vault.add_attachment(temp_dir, container_id=self.get_container_id(), file_name=name)
             except Exception as e:
                 return action_result.set_status(phantom.APP_ERROR, "Unable to add file to the vault for attachment. Error: {}".format(str(e)))
 
         else:
-            resp = self._connector.callAPI('GET', SYMANTECSA_ENDPOINT_GET_PACKET_DETAILS, kwargs,
-                                       SYMANTECSA_PCAP_FILE_DOWNLOAD_LOCATION.format(NAME=name))
-            Vault.add_attachment(SYMANTECSA_PCAP_FILE_DOWNLOAD_LOCATION.format(NAME=name), self.get_container_id())
+            try:
+                resp = self._connector.callAPI('GET', SYMANTECSA_ENDPOINT_GET_PACKET_DETAILS, kwargs,
+                                        SYMANTECSA_PCAP_FILE_DOWNLOAD_LOCATION.format(NAME=name))
+            except Exception as e:
+                return action_result.set_status(phantom.APP_ERROR, "Error : {}".format(str(e)))
+
+            # if got some internal server error
+            if resp.get('resultCode') and resp.get('resultCode') != 'API_SUCCESS_CODE':
+                resultCode = resp.get('resultCode')
+                errorList = resp.get('errors')
+                errorMsg = " ".join(str(x) for x in errorList)
+                return action_result.set_status(phantom.APP_ERROR, "Result Code: {}. Error: {} Please provide valid input(s)".format(resultCode, errorMsg))
+
+            # if not get the filepath in response
+            file_path = resp.get('download_file')
+            if not file_path:
+                return action_result.set_status(phantom.APP_ERROR, status_message="Unable to find download path")
+
+            ret_val = self.is_empty_file(file_path, action_result)
+
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
+            try:
+                Vault.add_attachment(SYMANTECSA_PCAP_FILE_DOWNLOAD_LOCATION.format(NAME=name), self.get_container_id(), file_name=name)
+            except Exception as e:
+                return action_result.set_status(phantom.APP_ERROR, "Unable to add file to the vault for attachment. Error: {}".format(str(e)))
 
         action_result.add_data(resp)
         return action_result.set_status(phantom.APP_SUCCESS, SYMANTECSA_GET_PCAP_SUCCESS)
+
+    def is_empty_file(self, file_path, action_result):
+        # If file size is zero
+        try:
+            with open(file_path, 'rb') as temp_file:
+                temp_file_data = temp_file.read()
+        except Exception as e:
+            return action_result.set_status(phantom.APP_ERROR, status_message="Error : {}".format(str(e)))
+
+        # If file size is zero or file is empty
+        if (not os.path.getsize(file_path)) or temp_file_data == SYMANTECSA_EMPTY_FILE:
+            # Delete file
+            os.unlink(file_path)
+            return action_result.set_status(phantom.APP_ERROR, status_message=SYMANTECSA_NO_DATA_FOUND_MSG)
+        return phantom.APP_SUCCESS
 
     def handle_action(self, params):
 
         action = self.get_action_identifier()
         ret_val = phantom.APP_SUCCESS
-        if (action == self.ACTION_ID_GET_PACKET_DETAILS):
+        if action == self.ACTION_ID_GET_PACKET_DETAILS:
             ret_val = self._get_packet_details(params)
-        elif (action == self.ACTION_ID_TEST_ASSET_CONNECTIVITY):
+        elif action == self.ACTION_ID_TEST_ASSET_CONNECTIVITY:
             ret_val = self._test_connectivity()
         return ret_val
 
