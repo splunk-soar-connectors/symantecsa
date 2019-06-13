@@ -78,7 +78,11 @@
                     "description": "Name for PCAP file to be downloaded",
                     "order": 2,
                     "data_type": "string",
-                    "required": true
+                    "contains": [
+                        "file name"
+                    ],
+                    "required": true,
+                    "primary": true
                 },
                 "filter": {
                     "description": "Capture filter to apply to PCAP (Custom Query)",
@@ -98,9 +102,7 @@
                     "example_values": [
                         "success",
                         "failed"
-                    ],
-                    "column_name": "Status",
-                    "column_order": 2
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.end_time",
@@ -119,6 +121,11 @@
                 {
                     "data_path": "action_result.parameter.filename",
                     "data_type": "string",
+                    "contains": [
+                        "file name"
+                    ],
+                    "column_name": "File Name",
+                    "column_order": 0,
                     "example_values": [
                         "new-pcap"
                     ]
@@ -136,8 +143,8 @@
                     "example_values": [
                         "/vault/tmp/new-pcap_2019-06-07T09:31:43.pcap"
                     ],
-                    "column_name": "File Name",
-                    "column_order": 0
+                    "column_name": "File Path",
+                    "column_order": 1
                 },
                 {
                     "data_path": "action_result.data.*.filesize",
@@ -146,7 +153,7 @@
                         232
                     ],
                     "column_name": "File Size",
-                    "column_order": 1
+                    "column_order": 2
                 },
                 {
                     "data_path": "action_result.summary",

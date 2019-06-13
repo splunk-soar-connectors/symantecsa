@@ -74,6 +74,7 @@ class SoleraConnector:
             response = f.text
         except:
             raise Exception("Error while parsing the response")
+
         try:
             respDict = json.loads(response)
 
@@ -82,7 +83,7 @@ class SoleraConnector:
         except:
             pass
 
-        # If download download to correct area
+        # If download is true, download to correct area
         if download is not False:
             chunk_size = 1000
             with open(download, 'wb') as dfile:

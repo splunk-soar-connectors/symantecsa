@@ -39,8 +39,7 @@ SYMANTECSA_EMPTY_FILE = '\n\r\r\n4\x00\x00\x00M<+\x1a\x01\x00\x00\x00\xff\xff\xf
                         '\x00\x00$\x00\x00\x14\x00\x00\x00'
 
 # Test Connectivity Errors
-SYMANTECSA_TEST_CONNECTIVITY_ERROR = "Error connecting to Symantec Security Analytics.  Please check your credentials and try again"
-SYMANTECSA_TEST_CONNECTIVITY_PROGRESS = "Making a test REST call"
+SYMANTECSA_TEST_CONNECTIVITY_ERROR = "Error connecting to Symantec Security Analytics. Please check your credentials and try again"
 SYMANTECSA_TIME_FORMAT_ERROR = "Please provide time in '%Y-%m-%dT%H:%M:%S' format"
 SYMANTECSA_TIME_RANGE_ERROR = "The given time range is incorrect"
 SYMANTECSA_FILTER_ERROR = "The given filter query is incorrect"
