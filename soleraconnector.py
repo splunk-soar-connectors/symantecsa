@@ -1,7 +1,12 @@
-import requests
+# File: soleraconnector.py
+# Copyright (c) 2019 Splunk Inc.
+#
+# SPLUNK CONFIDENTIAL - Use or disclosure of this material in whole or in part
+# without a valid written license from Splunk Inc. is PROHIBITED.import requests
 import os
 import json
 import os.path
+import requests
 
 
 class SoleraConnector:
@@ -21,13 +26,15 @@ class SoleraConnector:
             result = self.getVersion()
             if 'response' in result:
                 version = result['response'].pop()
+            elif 'resultCode' in result and result['resultCode'] == 'API_INVALID_USER_CODE':
+                raise Exception('Invalid username/apiKey')
             else:
                 raise Exception('Unable to determine api version')
 
         self.version = version
 
     def getVersion(self):
-        baseUrl = "https://" + self.ip + "/api/list"
+        baseUrl = "https://{}/api/list".format(self.ip)
 
         return self._request("GET", baseUrl)
 
@@ -43,7 +50,7 @@ class SoleraConnector:
         """
         if url[0:1] == '/':
             url = url[1:]
-        baseUrl = "https://" + self.ip + "/api/v" + self.version + "/" + url
+        baseUrl = "https://{}/api/v{}/{}".format(self.ip, self.version, url)
 
         return self._request(method, baseUrl, data, download)
 
@@ -62,7 +69,21 @@ class SoleraConnector:
         else:
             f = requests.get(url, auth=(self.username, self.apiKey), verify=False)
 
-        # If download download to correct area
+        # if got some internal server error when asset configuration is invalid and try to run get pcap action
+        try:
+            response = f.text
+        except:
+            raise Exception("Error while parsing the response")
+
+        try:
+            respDict = json.loads(response)
+
+            if respDict.get('resultCode') and respDict.get('resultCode') != 'API_SUCCESS_CODE':
+                return respDict
+        except:
+            pass
+
+        # If download is true, download to correct area
         if download is not False:
             chunk_size = 1000
             with open(download, 'wb') as dfile:
@@ -71,5 +92,4 @@ class SoleraConnector:
             filesize = os.path.getsize(download)
             return {'download_file': download, 'filesize': filesize}
         else:  # Else return the data
-            resp = f.text
-            return json.loads(resp)
+            return respDict
