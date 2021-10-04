@@ -1,7 +1,7 @@
 # --
 # File: symantecsa_connector.py
 #
-# Copyright (c) 2019 Splunk Inc.
+# Copyright (c) 2019-2021 Splunk Inc.
 #
 # SPLUNK CONFIDENTIAL - Use or disclosure of this material in whole or in part
 # without a valid written license from Splunk Inc. is PROHIBITED.
@@ -29,35 +29,62 @@ class SymantecsaConnector(BaseConnector):
     def __init__(self):
 
         super(SymantecsaConnector, self).__init__()
+        self._username = None
+        self._apikey = None
+        self._device_ip = None
+        self._verify = None
+        self._auth = None
+        self._connector = None
 
     def initialize(self):
-        '''
+        """
         Initializes the authentication tuple that the REST call needs
 
         :return:
-        '''
+        """
         config = self.get_config()
-        self._username = config[SYMANTECSA_CONFIG_USERNAME].encode('utf-8')
+        self._username = config[SYMANTECSA_CONFIG_USERNAME]
         self._apikey = config[SYMANTECSA_CONFIG_API_KEY]
-        self._device_ip = config[SYMANTECSA_CONFIG_DEVICE_IP].encode('utf-8')
+        self._device_ip = config[SYMANTECSA_CONFIG_DEVICE_IP]
         self._verify = config[phantom.APP_JSON_VERIFY]
         self._auth = (self._username, self._apikey)
         try:
-            self._connector = solera.SoleraConnector(self._username, self._apikey, self._device_ip, SYMANTECSA_API_VERSION)
+            self._connector = solera.SoleraConnector(self._username, self._apikey, self._device_ip, SYMANTECSA_API_VERSION, self._verify)
         except Exception as e:
             return self.set_status(phantom.APP_ERROR, e)
         return phantom.APP_SUCCESS
 
-    def _make_rest_call(self, action_result, endpoint, data={}, test=False):
-        ''' Calls the API v6 and returns the result
+    def _get_error_message_from_exception(self, e):
+        """ This method is used to get appropriate error message from the exception.
+        :param e: Exception object
+        :return: error message
+        """
+        error_code = PHANTOM_ERR_CODE_UNAVAILABLE
+        error_msg = PHANTOM_ERR_MSG_UNAVAILABLE
+        try:
+            if hasattr(e, 'args'):
+                if len(e.args) > 1:
+                    error_code = e.args[0]
+                    error_msg = e.args[1]
+                elif len(e.args) == 1:
+                    error_msg = e.args[0]
+        except:
+            pass
+
+        return "Error Code: {0}. Error Message: {1}".format(error_code, error_msg)
+
+    def _make_rest_call(self, action_result, endpoint, data=None, test=False):
+        """ Calls the API v6 and returns the result
 
         :param endpoint: URI of the API endpoint
         :param params: Params, if any
         :param method: HTTP Method GET or POST
         :param test: If this is a test connectivity.  Default False
         :return: True or False, and Error Message or response result
-        '''
+        """
         # V6 is needed for the updated download query
+        if data is None:
+            data = {}
         url = "https://{}{}{}".format(self._device_ip, SYMANTECSA_ENDPOINT_BASE_URI, endpoint)
         if test:
             url = endpoint
@@ -65,8 +92,9 @@ class SymantecsaConnector(BaseConnector):
             r = requests.get(url, auth=self._auth, verify=self._verify, data=data)
             resp_json = r.json()
         except Exception as e:
-            return (action_result.set_status(phantom.APP_ERROR, "Error parsing response to JSON. Error : {}".format(str(e))), None)
-        return (phantom.APP_SUCCESS, resp_json)
+            err_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, "Error parsing response to JSON. Error : {}".format(err_msg)), None
+        return phantom.APP_SUCCESS, resp_json
 
     def _test_connectivity(self):
         """ Function that handles the test connectivity action, it is much simpler than other action handlers.
@@ -82,17 +110,17 @@ class SymantecsaConnector(BaseConnector):
         ret_val, response = self._make_rest_call(action_result, endpoint, test=True)
 
         # Process errors
-        if phantom.is_fail(ret_val) or ((not response) and response.get('resultCode') != 'API_SUCCESS_CODE'):
+        if phantom.is_fail(ret_val) or (response.get('resultCode') != 'API_SUCCESS_CODE'):
             self.debug_print(action_result.get_message())
             self.set_status(phantom.APP_ERROR, action_result.get_message())
 
             # Append the message to display
             self.append_to_message(SYMANTECSA_TEST_CONNECTIVITY_ERROR)
 
-            self.save_progress("Test Connectivity failed")
+            self.save_progress(SYMANTECSA_TEST_CONNECTIVITY_FAILED)
             return phantom.APP_ERROR
 
-        self.save_progress("Test Connectivity succeeded")
+        self.save_progress(SYMANTECSA_TEST_CONNECTIVITY_SUCCESS)
         return self.set_status_save_progress(phantom.APP_SUCCESS)
 
     def _get_packet_details(self, params):
@@ -131,8 +159,7 @@ class SymantecsaConnector(BaseConnector):
         path = '{path}{custom_query}/'.format(path=path, custom_query=custom_query)
 
         # adding run timestamp in filename
-        name = "{filename} {timestamp}".format(filename=name,
-                timestamp=datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%dT%H:%M:%S"))
+        name = "{filename} {timestamp}".format(filename=name, timestamp=datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%dT%H:%M:%S"))
 
         kwargs = {
             'path': path,
@@ -148,19 +175,20 @@ class SymantecsaConnector(BaseConnector):
         try:
             resp = self._connector.callAPI('GET', SYMANTECSA_ENDPOINT_GET_PACKET_DETAILS, kwargs, temp_dir)
         except Exception as e:
-            return action_result.set_status(phantom.APP_ERROR, "Error : {}".format(str(e)))
+            err_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, "Error : {}".format(err_msg))
 
         # Internal server error
         if resp.get('resultCode') and resp.get('resultCode') != 'API_SUCCESS_CODE':
             resultCode = resp.get('resultCode')
             errorList = resp.get('errors')
             errorMsg = " ".join(str(x) for x in errorList)
-            return action_result.set_status(phantom.APP_ERROR, "Result Code: {}. Error: {} Please provide valid input(s)".format(resultCode, errorMsg))
+            return action_result.set_status(phantom.APP_ERROR, SYMANTECSA_GET_PCAP_INVALID_INPUT.format(resultCode, errorMsg))
 
         # No filepath in response
         file_path = resp.get('download_file')
         if not file_path:
-            return action_result.set_status(phantom.APP_ERROR, "Unable to find download path")
+            return action_result.set_status(phantom.APP_ERROR, SYMANTECSA_GET_PCAP_PATH_NOT_FOUND)
 
         ret_val = self.is_empty_file(file_path, action_result)
 
@@ -169,7 +197,8 @@ class SymantecsaConnector(BaseConnector):
         try:
             Vault.add_attachment(temp_dir, container_id=self.get_container_id(), file_name=name)
         except Exception as e:
-            return action_result.set_status(phantom.APP_ERROR, "Unable to add file to the vault for attachment. Error: {}".format(str(e)))
+            err_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, VAULT_UNABLE_TO_ADD_FILE.format(err_msg))
 
         action_result.add_data(resp)
         return action_result.set_status(phantom.APP_SUCCESS, SYMANTECSA_GET_PCAP_SUCCESS)
@@ -180,7 +209,8 @@ class SymantecsaConnector(BaseConnector):
             with open(file_path, 'rb') as temp_file:
                 temp_file_data = temp_file.read()
         except Exception as e:
-            return action_result.set_status(phantom.APP_ERROR, status_message="Error : {}".format(str(e)))
+            err_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, status_message="Error : {}".format(err_msg))
 
         # For empty file
         if (not os.path.getsize(file_path)) or temp_file_data == SYMANTECSA_EMPTY_FILE:
@@ -225,6 +255,6 @@ if __name__ == '__main__':
         ret_val = connector._handle_action(json.dumps(in_json), None)
 
         # Dump the return value
-        print ret_val
+        print(ret_val)
 
     exit(0)
