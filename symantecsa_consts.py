@@ -1,13 +1,15 @@
 # --
 # File: symantecsa_consts.py
 #
-# Copyright (c) 2019 Splunk Inc.
+# Copyright (c) 2019-2021 Splunk Inc.
 #
 # SPLUNK CONFIDENTIAL - Use or disclosure of this material in whole or in part
 # without a valid written license from Splunk Inc. is PROHIBITED.
 #
 # --
 
+PHANTOM_ERR_CODE_UNAVAILABLE = "Error code unavailable"
+PHANTOM_ERR_MSG_UNAVAILABLE = "Unknown error occurred. Please check the asset configuration and|or action parameters."
 
 # Config variables
 SYMANTECSA_CONFIG_USERNAME = "username"
@@ -29,6 +31,7 @@ SYMANTECSA_API_VERSION = "6"
 
 # Action Result Messages
 SYMANTECSA_GET_PCAP_SUCCESS = "PCAP file written to vault successfully"
+SYMANTECSA_TEST_CONNECTIVITY_SUCCESS = "Test Connectivity Passed"
 
 # PCAP file download location
 SYMANTECSA_PCAP_FILE_DOWNLOAD_LOCATION = "/vault/tmp/{NAME}.pcap"
@@ -40,8 +43,12 @@ SYMANTECSA_EMPTY_FILE = '\n\r\r\n4\x00\x00\x00M<+\x1a\x01\x00\x00\x00\xff\xff\xf
 
 # Test Connectivity Errors
 SYMANTECSA_TEST_CONNECTIVITY_ERROR = "Error connecting to Symantec Security Analytics. Please check your credentials and try again"
+SYMANTECSA_TEST_CONNECTIVITY_FAILED = "Test Connectivity Failed"
 SYMANTECSA_TIME_FORMAT_ERROR = "Please provide time in '%Y-%m-%dT%H:%M:%S' format"
 SYMANTECSA_TIME_RANGE_ERROR = "The given time range is incorrect"
 SYMANTECSA_FILTER_ERROR = "The given filter query is incorrect"
 SYMANTECSA_TEST_CONNECTIVITY_START = "Querying Symantec Security Analytics using the base url {base_url}"
 SYMANTECSA_NO_DATA_FOUND_MSG = 'No packets found'
+SYMANTECSA_GET_PCAP_INVALID_INPUT = "Result Code: {}. Error: {} Please provide valid input(s)"
+SYMANTECSA_GET_PCAP_PATH_NOT_FOUND = "Unable to find download path"
+VAULT_UNABLE_TO_ADD_FILE = "Unable to add file to the vault. Error: {}"

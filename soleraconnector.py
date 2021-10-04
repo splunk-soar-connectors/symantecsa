@@ -1,16 +1,17 @@
 # File: soleraconnector.py
-# Copyright (c) 2019 Splunk Inc.
+# Copyright (c) 2019-2021 Splunk Inc.
 #
 # SPLUNK CONFIDENTIAL - Use or disclosure of this material in whole or in part
-# without a valid written license from Splunk Inc. is PROHIBITED.import requests
+# without a valid written license from Splunk Inc. is PROHIBITED.
+
+import requests
 import os
 import json
 import os.path
-import requests
 
 
 class SoleraConnector:
-    def __init__(self, username, apiKey, ip, version=False):
+    def __init__(self, username, apiKey, ip, version=False, verify=False):
         """ The initlization method for the SoleraConnector.
 
         Keyword arguments:
@@ -21,8 +22,9 @@ class SoleraConnector:
         self.username = username
         self.apiKey = apiKey
         self.ip = ip
+        self.verify = verify
 
-        if version is False:
+        if not version:
             result = self.getVersion()
             if 'response' in result:
                 version = result['response'].pop()
@@ -58,33 +60,28 @@ class SoleraConnector:
         post = {}
         files = {}
         if len(data) != 0:
-            for k, v in data.iteritems():
-                if isinstance(v, basestring) and os.path.isfile(v):
+            for k, v in data.items():
+                try:
+                    isStr = isinstance(v, basestring)
+                except NameError:
+                    isStr = isinstance(v, str)
+                if isStr and os.path.isfile(v):
                     files[k] = open(v, "rb")
                 else:
                     post[k] = json.dumps(v)
             if method != "POST":
                 post['_method'] = method
-            f = requests.post(url, auth=(self.username, self.apiKey), data=post, files=files, verify=False)
+            f = requests.post(url, auth=(self.username, self.apiKey), data=post, files=files, verify=self.verify, stream=True)
+        elif method == 'POST':
+            post = {}
+            files = {}
+            post['_method'] = method
+            f = requests.post(url, auth=(self.username, self.apiKey), data=post, files=files, verify=self.verify)
         else:
-            f = requests.get(url, auth=(self.username, self.apiKey), verify=False)
+            f = requests.get(url, auth=(self.username, self.apiKey), verify=self.verify, stream=True)
 
-        # if got some internal server error when asset configuration is invalid and try to run get pcap action
-        try:
-            response = f.text
-        except:
-            raise Exception("Error while parsing the response")
-
-        try:
-            respDict = json.loads(response)
-
-            if respDict.get('resultCode') and respDict.get('resultCode') != 'API_SUCCESS_CODE':
-                return respDict
-        except:
-            pass
-
-        # If download is true, download to correct area
-        if download is not False:
+        # If download download to correct area
+        if download:
             chunk_size = 1000
             with open(download, 'wb') as dfile:
                 for chunk in f.iter_content(chunk_size):
@@ -92,4 +89,5 @@ class SoleraConnector:
             filesize = os.path.getsize(download)
             return {'download_file': download, 'filesize': filesize}
         else:  # Else return the data
-            return respDict
+            resp = f.text
+            return json.loads(resp)
