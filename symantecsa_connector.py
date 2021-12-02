@@ -15,15 +15,16 @@
 #
 #
 # Phantom imports
-import phantom.app as phantom
-from phantom.base_connector import BaseConnector
-from phantom.action_result import ActionResult
-from phantom.vault import Vault
-
-import os
 import datetime
+import os
+
+import phantom.app as phantom
 import requests
 import simplejson as json
+from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
+from phantom.vault import Vault
+
 import soleraconnector as solera
 from symantecsa_consts import *
 
@@ -239,6 +240,7 @@ class SymantecsaConnector(BaseConnector):
 if __name__ == '__main__':
     # Imports
     import sys
+
     import pudb
 
     # Breakpoint at runtime
