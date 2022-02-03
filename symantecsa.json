@@ -11,7 +11,7 @@
     "product_vendor": "Symantec",
     "product_name": "Security Analytics",
     "product_version_regex": "8.2.*",
-    "min_phantom_version": "4.10.0.40961",
+    "min_phantom_version": "5.1.0",
     "fips_compliant": true,
     "python_version": "3",
     "latest_tested_versions": [
