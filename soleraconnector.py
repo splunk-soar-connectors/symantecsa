@@ -18,7 +18,7 @@ import os.path
 
 import requests
 
-DEFAULT_REQUEST_TIMEOUT = 30  # in seconds
+DEFAULT_REQUEST_TIMEOUT = 60  # in seconds
 
 
 class SoleraConnector:

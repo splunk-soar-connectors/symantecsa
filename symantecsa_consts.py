@@ -57,4 +57,4 @@ SYMANTECSA_GET_PCAP_INVALID_INPUT = "Result Code: {}. Error: {} Please provide v
 SYMANTECSA_GET_PCAP_PATH_NOT_FOUND = "Unable to find download path"
 VAULT_UNABLE_TO_ADD_FILE = "Unable to add file to the vault. Error: {}"
 
-SYMANTECSA_DEFAULT_REQUEST_TIMEOUT = 30  # in seconds
+SYMANTECSA_DEFAULT_REQUEST_TIMEOUT = 60  # in seconds
