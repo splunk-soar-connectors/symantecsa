@@ -56,3 +56,5 @@ SYMANTECSA_NO_DATA_FOUND_MSG = 'No packets found'
 SYMANTECSA_GET_PCAP_INVALID_INPUT = "Result Code: {}. Error: {} Please provide valid input(s)"
 SYMANTECSA_GET_PCAP_PATH_NOT_FOUND = "Unable to find download path"
 VAULT_UNABLE_TO_ADD_FILE = "Unable to add file to the vault. Error: {}"
+
+DEFAULT_REQUEST_TIMEOUT = 30  # in seconds

@@ -96,7 +96,7 @@ class SymantecsaConnector(BaseConnector):
         if test:
             url = endpoint
         try:
-            r = requests.get(url, auth=self._auth, verify=self._verify, data=data)
+            r = requests.get(url, auth=self._auth, verify=self._verify, data=data, timeout=SYMANTECSA_DEFAULT_REQUEST_TIMEOUT)
             resp_json = r.json()
         except Exception as e:
             err_msg = self._get_error_message_from_exception(e)
