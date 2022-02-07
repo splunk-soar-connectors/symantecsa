@@ -2,11 +2,11 @@
 # Symantec Security Analytics
 
 Publisher: Splunk  
-Connector Version: 2\.1\.2  
+Connector Version: 2\.1\.5  
 Product Vendor: Symantec  
 Product Name: Security Analytics  
 Product Version Supported (regex): "8\.2\.\*"  
-Minimum Product Version: 4\.10\.0\.40961  
+Minimum Product Version: 5\.1\.0  
 
 This app allows querying network traffic details on Symantec Security Analytics \(formerly known as BlueCoat Solera\)
 

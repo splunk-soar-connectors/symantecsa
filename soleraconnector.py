@@ -18,6 +18,8 @@ import os.path
 
 import requests
 
+DEFAULT_REQUEST_TIMEOUT = 60  # in seconds
+
 
 class SoleraConnector:
     def __init__(self, username, apiKey, ip, version=False, verify=False):
@@ -80,14 +82,17 @@ class SoleraConnector:
                     post[k] = json.dumps(v)
             if method != "POST":
                 post['_method'] = method
-            f = requests.post(url, auth=(self.username, self.apiKey), data=post, files=files, verify=self.verify, stream=True)
+            f = requests.post(url, auth=(self.username, self.apiKey), data=post, files=files, verify=self.verify, stream=True,
+                                         timeout=DEFAULT_REQUEST_TIMEOUT)
         elif method == 'POST':
             post = {}
             files = {}
             post['_method'] = method
-            f = requests.post(url, auth=(self.username, self.apiKey), data=post, files=files, verify=self.verify)
+            f = requests.post(url, auth=(self.username, self.apiKey), data=post, files=files, verify=self.verify,
+                              timeout=DEFAULT_REQUEST_TIMEOUT)
         else:
-            f = requests.get(url, auth=(self.username, self.apiKey), verify=self.verify, stream=True)
+            f = requests.get(url, auth=(self.username, self.apiKey), verify=self.verify, stream=True,
+                             timeout=DEFAULT_REQUEST_TIMEOUT)
 
         # If download download to correct area
         if download:
