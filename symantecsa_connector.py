@@ -138,6 +138,7 @@ class SymantecsaConnector(BaseConnector):
         :return: an action result
         '''
         action_result = self.add_action_result(ActionResult(dict(params)))
+        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
 
         start_time = params[SYMANTECSA_ACTION_PARAM_START_TIME]
         end_time = params[SYMANTECSA_ACTION_PARAM_END_TIME]
@@ -180,6 +181,7 @@ class SymantecsaConnector(BaseConnector):
             temp_dir = SYMANTECSA_PCAP_FILE_DOWNLOAD_LOCATION.format(NAME=name)
 
         try:
+            phantom.debug_print("Calling API")
             resp = self._connector.callAPI('GET', SYMANTECSA_ENDPOINT_GET_PACKET_DETAILS, kwargs, temp_dir)
         except Exception as e:
             error_message = self._get_error_message_from_exception(e)
