@@ -1,6 +1,6 @@
 # File: symantecsa_connector.py
 #
-# Copyright (c) 2019-2022 Splunk Inc.
+# Copyright (c) 2019-2024 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -66,19 +66,19 @@ class SymantecsaConnector(BaseConnector):
         :param e: Exception object
         :return: error message
         """
-        error_code = PHANTOM_ERR_CODE_UNAVAILABLE
-        error_msg = PHANTOM_ERR_MSG_UNAVAILABLE
+        error_code = PHANTOM_ERROR_CODE_UNAVAILABLE
+        error_message = PHANTOM_ERROR_MESSAGE_UNAVAILABLE
         try:
             if hasattr(e, 'args'):
                 if len(e.args) > 1:
                     error_code = e.args[0]
-                    error_msg = e.args[1]
+                    error_message = e.args[1]
                 elif len(e.args) == 1:
-                    error_msg = e.args[0]
+                    error_message = e.args[0]
         except:
             pass
 
-        return "Error Code: {0}. Error Message: {1}".format(error_code, error_msg)
+        return "Error Code: {0}. Error Message: {1}".format(error_code, error_message)
 
     def _make_rest_call(self, action_result, endpoint, data=None, test=False):
         """ Calls the API v6 and returns the result
@@ -99,8 +99,8 @@ class SymantecsaConnector(BaseConnector):
             r = requests.get(url, auth=self._auth, verify=self._verify, data=data, timeout=SYMANTECSA_DEFAULT_REQUEST_TIMEOUT)
             resp_json = r.json()
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_ERROR, "Error parsing response to JSON. Error : {}".format(err_msg)), None
+            error_message = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, "Error parsing response to JSON. Error : {}".format(error_message)), None
         return phantom.APP_SUCCESS, resp_json
 
     def _test_connectivity(self):
@@ -182,8 +182,8 @@ class SymantecsaConnector(BaseConnector):
         try:
             resp = self._connector.callAPI('GET', SYMANTECSA_ENDPOINT_GET_PACKET_DETAILS, kwargs, temp_dir)
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_ERROR, "Error : {}".format(err_msg))
+            error_message = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, "Error : {}".format(error_message))
 
         # Internal server error
         if resp.get('resultCode') and resp.get('resultCode') != 'API_SUCCESS_CODE':
@@ -204,8 +204,8 @@ class SymantecsaConnector(BaseConnector):
         try:
             Vault.add_attachment(temp_dir, container_id=self.get_container_id(), file_name=name)
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_ERROR, VAULT_UNABLE_TO_ADD_FILE.format(err_msg))
+            error_message = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, VAULT_UNABLE_TO_ADD_FILE.format(error_message))
 
         action_result.add_data(resp)
         return action_result.set_status(phantom.APP_SUCCESS, SYMANTECSA_GET_PCAP_SUCCESS)
@@ -216,14 +216,14 @@ class SymantecsaConnector(BaseConnector):
             with open(file_path, 'rb') as temp_file:
                 temp_file_data = temp_file.read()
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            return action_result.set_status(phantom.APP_ERROR, status_message="Error : {}".format(err_msg))
+            error_message = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, status_message="Error : {}".format(error_message))
 
         # For empty file
         if (not os.path.getsize(file_path)) or temp_file_data == SYMANTECSA_EMPTY_FILE:
             # Delete file
             os.unlink(file_path)
-            return action_result.set_status(phantom.APP_ERROR, status_message=SYMANTECSA_NO_DATA_FOUND_MSG)
+            return action_result.set_status(phantom.APP_ERROR, status_message=SYMANTECSA_NO_DATA_FOUND_MESSAGE)
         return phantom.APP_SUCCESS
 
     def handle_action(self, params):
