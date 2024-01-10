@@ -181,7 +181,7 @@ class SymantecsaConnector(BaseConnector):
             temp_dir = SYMANTECSA_PCAP_FILE_DOWNLOAD_LOCATION.format(NAME=name)
 
         try:
-            phantom.debug_print("Calling API")
+            self.debug_print("Calling API")
             resp = self._connector.callAPI('GET', SYMANTECSA_ENDPOINT_GET_PACKET_DETAILS, kwargs, temp_dir)
         except Exception as e:
             error_message = self._get_error_message_from_exception(e)
