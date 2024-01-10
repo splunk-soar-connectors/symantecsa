@@ -1,6 +1,6 @@
 # File: symantecsa_consts.py
 #
-# Copyright (c) 2019-2022 Splunk Inc.
+# Copyright (c) 2019-2024 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,12 @@
 # the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 # either express or implied. See the License for the specific language governing permissions
 # and limitations under the License.
-PHANTOM_ERR_CODE_UNAVAILABLE = "Error code unavailable"
-PHANTOM_ERR_MSG_UNAVAILABLE = "Unknown error occurred. Please check the asset configuration and|or action parameters."
+PHANTOM_ERROR_CODE_UNAVAILABLE = "Error code unavailable"
+PHANTOM_ERROR_MESSAGE_UNAVAILABLE = "Unknown error occurred. Please check the asset configuration and|or action parameters."
 
 # Config variables
 SYMANTECSA_CONFIG_USERNAME = "username"
-SYMANTECSA_CONFIG_API_KEY = "api_key"
+SYMANTECSA_CONFIG_API_KEY = "api_key"  # pragma: allowlist secret
 SYMANTECSA_CONFIG_DEVICE_IP = "device_ip"
 
 # Action params for get packet details
@@ -52,7 +52,7 @@ SYMANTECSA_TIME_FORMAT_ERROR = "Please provide time in '%Y-%m-%dT%H:%M:%S' forma
 SYMANTECSA_TIME_RANGE_ERROR = "The given time range is incorrect"
 SYMANTECSA_FILTER_ERROR = "The given filter query is incorrect"
 SYMANTECSA_TEST_CONNECTIVITY_START = "Querying Symantec Security Analytics using the base url {base_url}"
-SYMANTECSA_NO_DATA_FOUND_MSG = 'No packets found'
+SYMANTECSA_NO_DATA_FOUND_MESSAGE = 'No packets found'
 SYMANTECSA_GET_PCAP_INVALID_INPUT = "Result Code: {}. Error: {} Please provide valid input(s)"
 SYMANTECSA_GET_PCAP_PATH_NOT_FOUND = "Unable to find download path"
 VAULT_UNABLE_TO_ADD_FILE = "Unable to add file to the vault. Error: {}"
