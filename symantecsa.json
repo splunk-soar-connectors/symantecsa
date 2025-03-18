@@ -19,7 +19,7 @@
     ],
     "logo": "logo_symantecsa.svg",
     "logo_dark": "logo_symantecsa_dark.svg",
-    "license": "Copyright (c) 2019-2024 Splunk Inc.",
+    "license": "Copyright (c) 2019-2025 Splunk Inc.",
     "configuration": {
         "device_ip": {
             "description": "Device IP (e.g. 127.127.127.127)",
