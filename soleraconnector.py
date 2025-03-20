@@ -1,6 +1,6 @@
 # File: soleraconnector.py
 #
-# Copyright (c) 2019-2024 Splunk Inc.
+# Copyright (c) 2019-2025 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ import os.path
 
 import requests
 
+
 DEFAULT_REQUEST_TIMEOUT = 60  # in seconds
 
 
 class SoleraConnector:
     def __init__(self, username, apiKey, ip, version=False, verify=False):
-        """ The initlization method for the SoleraConnector.
+        """The initlization method for the SoleraConnector.
 
         Keyword arguments:
         username -- A string that is the username of the person making the requests
@@ -37,22 +38,22 @@ class SoleraConnector:
 
         if not version:
             result = self.getVersion()
-            if 'response' in result:
-                version = result['response'].pop()
-            elif 'resultCode' in result and result['resultCode'] == 'API_INVALID_USER_CODE':
-                raise Exception('Invalid username/apiKey')
+            if "response" in result:
+                version = result["response"].pop()
+            elif "resultCode" in result and result["resultCode"] == "API_INVALID_USER_CODE":
+                raise Exception("Invalid username/apiKey")
             else:
-                raise Exception('Unable to determine api version')
+                raise Exception("Unable to determine api version")
 
         self.version = version
 
     def getVersion(self):
-        baseUrl = "https://{}/api/list".format(self.ip)
+        baseUrl = f"https://{self.ip}/api/list"
 
         return self._request("GET", baseUrl)
 
     def callAPI(self, method, url, data={}, download=False):
-        """ Calls the API of a service and returns the result.
+        """Calls the API of a service and returns the result.
 
         Keyword arguments:
         method -- A string of the HTTP Method(GET,POST)
@@ -61,9 +62,9 @@ class SoleraConnector:
         download -- A string of the name the file should be give.
             If no string is given it assumes it's not a download(default False)
         """
-        if url[0:1] == '/':
+        if url[0:1] == "/":
             url = url[1:]
-        baseUrl = "https://{}/api/v{}/{}".format(self.ip, self.version, url)
+        baseUrl = f"https://{self.ip}/api/v{self.version}/{url}"
 
         return self._request(method, baseUrl, data, download)
 
@@ -81,27 +82,28 @@ class SoleraConnector:
                 else:
                     post[k] = json.dumps(v)
             if method != "POST":
-                post['_method'] = method
-            f = requests.post(url, auth=(self.username, self.apiKey), data=post, files=files, verify=self.verify, stream=True,
-                                         timeout=DEFAULT_REQUEST_TIMEOUT)
-        elif method == 'POST':
+                post["_method"] = method
+            f = requests.post(
+                url, auth=(self.username, self.apiKey), data=post, files=files, verify=self.verify, stream=True, timeout=DEFAULT_REQUEST_TIMEOUT
+            )
+        elif method == "POST":
             post = {}
             files = {}
-            post['_method'] = method
-            f = requests.post(url, auth=(self.username, self.apiKey), data=post, files=files, verify=self.verify,
-                              timeout=DEFAULT_REQUEST_TIMEOUT)
+            post["_method"] = method
+            f = requests.post(
+                url, auth=(self.username, self.apiKey), data=post, files=files, verify=self.verify, timeout=DEFAULT_REQUEST_TIMEOUT
+            )
         else:
-            f = requests.get(url, auth=(self.username, self.apiKey), verify=self.verify, stream=True,
-                             timeout=DEFAULT_REQUEST_TIMEOUT)
+            f = requests.get(url, auth=(self.username, self.apiKey), verify=self.verify, stream=True, timeout=DEFAULT_REQUEST_TIMEOUT)
 
         # If download download to correct area
         if download:
             chunk_size = 1000
-            with open(download, 'wb') as dfile:
+            with open(download, "wb") as dfile:
                 for chunk in f.iter_content(chunk_size):
                     dfile.write(chunk)
             filesize = os.path.getsize(download)
-            return {'download_file': download, 'filesize': filesize}
+            return {"download_file": download, "filesize": filesize}
         else:  # Else return the data
             resp = f.text
             return json.loads(resp)

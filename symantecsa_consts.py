@@ -1,6 +1,6 @@
 # File: symantecsa_consts.py
 #
-# Copyright (c) 2019-2024 Splunk Inc.
+# Copyright (c) 2019-2025 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,9 +41,11 @@ SYMANTECSA_TEST_CONNECTIVITY_SUCCESS = "Test Connectivity Passed"
 SYMANTECSA_PCAP_FILE_DOWNLOAD_LOCATION = "/vault/tmp/{NAME}.pcap"
 
 # No packets file data
-SYMANTECSA_EMPTY_FILE = '\n\r\r\n4\x00\x00\x00M<+\x1a\x01\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\x02\x00\x10\x00' \
-                        'Solera Networks\x00\x00\x00\x00\x004\x00\x00\x00\x01\x00\x00\x00\x14\x00\x00\x00\x01\x00\x00' \
-                        '\x00\x00$\x00\x00\x14\x00\x00\x00'
+SYMANTECSA_EMPTY_FILE = (
+    "\n\r\r\n4\x00\x00\x00M<+\x1a\x01\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\x02\x00\x10\x00"
+    "Solera Networks\x00\x00\x00\x00\x004\x00\x00\x00\x01\x00\x00\x00\x14\x00\x00\x00\x01\x00\x00"
+    "\x00\x00$\x00\x00\x14\x00\x00\x00"
+)
 
 # Test Connectivity Errors
 SYMANTECSA_TEST_CONNECTIVITY_ERROR = "Error connecting to Symantec Security Analytics. Please check your credentials and try again"
@@ -52,7 +54,7 @@ SYMANTECSA_TIME_FORMAT_ERROR = "Please provide time in '%Y-%m-%dT%H:%M:%S' forma
 SYMANTECSA_TIME_RANGE_ERROR = "The given time range is incorrect"
 SYMANTECSA_FILTER_ERROR = "The given filter query is incorrect"
 SYMANTECSA_TEST_CONNECTIVITY_START = "Querying Symantec Security Analytics using the base url {base_url}"
-SYMANTECSA_NO_DATA_FOUND_MESSAGE = 'No packets found'
+SYMANTECSA_NO_DATA_FOUND_MESSAGE = "No packets found"
 SYMANTECSA_GET_PCAP_INVALID_INPUT = "Result Code: {}. Error: {} Please provide valid input(s)"
 SYMANTECSA_GET_PCAP_PATH_NOT_FOUND = "Unable to find download path"
 VAULT_UNABLE_TO_ADD_FILE = "Unable to add file to the vault. Error: {}"
