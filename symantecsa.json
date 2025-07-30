@@ -5,15 +5,18 @@
     "publisher": "Splunk",
     "type": "investigative",
     "main_module": "symantecsa_connector.py",
-    "app_version": "2.1.7",
-    "utctime_updated": "2025-04-11T18:02:33.253421Z",
+    "app_version": "2.1.8",
+    "utctime_updated": "2025-07-30T17:55:00.147064Z",
     "package_name": "phantom_symantecsa",
     "product_vendor": "Symantec",
     "product_name": "Security Analytics",
     "product_version_regex": "8.2.*",
     "min_phantom_version": "5.1.0",
     "fips_compliant": true,
-    "python_version": ["3.9", "3.13"],
+    "python_version": [
+        "3.9",
+        "3.13"
+    ],
     "latest_tested_versions": [
         "On prem, Version 8.2.4.55248"
     ],

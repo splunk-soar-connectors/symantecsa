@@ -1,7 +1,7 @@
 # Symantec Security Analytics
 
 Publisher: Splunk \
-Connector Version: 2.1.7 \
+Connector Version: 2.1.8 \
 Product Vendor: Symantec \
 Product Name: Security Analytics \
 Minimum Product Version: 5.1.0
