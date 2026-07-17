@@ -98,6 +98,8 @@ class SoleraConnector:
 
         # If download download to correct area
         if download:
+            if not f.ok:
+                return {"resultCode": f"HTTP_{f.status_code}", "errors": [f.reason]}
             chunk_size = 1000
             with open(download, "wb") as dfile:
                 for chunk in f.iter_content(chunk_size):

@@ -140,7 +140,7 @@ class SymantecsaConnector(BaseConnector):
 
         start_time = params[SYMANTECSA_ACTION_PARAM_START_TIME]
         end_time = params[SYMANTECSA_ACTION_PARAM_END_TIME]
-        name = params[SYMANTECSA_ACTION_PARAM_FILENAME]
+        name = os.path.basename(params[SYMANTECSA_ACTION_PARAM_FILENAME])
         filter = params[SYMANTECSA_ACTION_PARAM_FILTER]
 
         # validation for start time and end time
