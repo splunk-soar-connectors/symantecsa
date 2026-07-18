@@ -1,9 +1,9 @@
 # Symantec Security Analytics
 
-Publisher: Splunk \
-Connector Version: 2.1.9 \
-Product Vendor: Symantec \
-Product Name: Security Analytics \
+Publisher: Splunk <br>
+Connector Version: 2.1.9 <br>
+Product Vendor: Symantec <br>
+Product Name: Security Analytics <br>
 Minimum Product Version: 5.1.0
 
 This app allows querying network traffic details on Symantec Security Analytics (formerly known as BlueCoat Solera)
@@ -21,14 +21,14 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 
 ### Supported Actions
 
-[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity \
+[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity <br>
 [get pcap](#action-get-pcap) - Queries to return specific network traffic information
 
 ## action: 'test connectivity'
 
 Validate the asset configuration for connectivity
 
-Type: **test** \
+Type: **test** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -43,7 +43,7 @@ No Output
 
 Queries to return specific network traffic information
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 This action will create a pcap file of network data and upload it to the vault. Timespan must be in specified format. Please note that the <b>name</b> of the file in the vault will be stored in such format: (filename provided in the parameter) (action run timestamp).<br>The <b>filter</b> parameter of <b>get_pcap</b> accepts queries in the following format:<br><ul><li>Key-value pairs are separated by '/'<br>e.g. <b>application_group="file server"</b> can be written as <b>/application_group/file server</b></li><li>Two regular expression characters are supported : <ul><li>question mark('?')- single character</li> <li>asterisk('\*')- zero or more characters</li></ul></li><li>Logical operators like 'OR', 'AND', 'NOT' are supported</li><li>Along with '=', following operators are used '!=', '>', '>=', '\<', '\<=' in custom query as '_not_', '_gt_', '_ge_', '_lt_', '_le_' respectively</li><li>Contains('~') and not contains('!~') can also be used <br>e.g. <b>ip_protocol~t</b> which means "ip_protocol contains char 't'", can be written as <b>/ip_protocol/\*t\*</b> </li><li>Complex queries can be created using escaped curly brackets('/}') and escaped square brackets('/\]') <br>e.g. <b>(application_id=arp and (port>50000 or country!=china))</b> can be written as <b>/{/\[/application_id/arp/and/[/port/\_gt_50000/or/country/\_not_china/]/\]/}</b> </li><li>Range entries can be used to filter data <br>e.g. <b>packet_length=10-100</b> can be written as <b>/packet_length/10_to_100</b> </li><li>For more details visit <a href="https://origin-symwisedownload.symantec.com/resources/webguides/security_analytics/7.3.2/webguide/desktop/ENG/Analytics/Filtering/wildcards_and_logical_operators.htm" target="_blank">this link</a></li></ul>.
@@ -77,7 +77,7 @@ ______________________________________________________________________
 
 Auto-generated Splunk SOAR Connector documentation.
 
-Copyright 2025 Splunk Inc.
+Copyright 2026 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
