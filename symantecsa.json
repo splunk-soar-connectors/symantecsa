@@ -19,7 +19,7 @@
     ],
     "logo": "logo_symantecsa.svg",
     "logo_dark": "logo_symantecsa_dark.svg",
-    "license": "Copyright (c) 2019-2025 Splunk Inc.",
+    "license": "Copyright (c) 2019-2026 Splunk Inc.",
     "configuration": {
         "device_ip": {
             "description": "Device IP (e.g. 127.127.127.127)",
@@ -43,7 +43,7 @@
             "data_type": "boolean",
             "description": "Verify server certificate",
             "order": 1,
-            "default": false
+            "default": true
         }
     },
     "actions": [

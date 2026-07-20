@@ -1,6 +1,6 @@
 # File: soleraconnector.py
 #
-# Copyright (c) 2019-2025 Splunk Inc.
+# Copyright (c) 2019-2026 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -98,6 +98,8 @@ class SoleraConnector:
 
         # If download download to correct area
         if download:
+            if not f.ok:
+                return {"resultCode": f"HTTP_{f.status_code}", "errors": [f.reason]}
             chunk_size = 1000
             with open(download, "wb") as dfile:
                 for chunk in f.iter_content(chunk_size):

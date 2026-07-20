@@ -1,6 +1,6 @@
 # File: symantecsa_connector.py
 #
-# Copyright (c) 2019-2025 Splunk Inc.
+# Copyright (c) 2019-2026 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ class SymantecsaConnector(BaseConnector):
 
         start_time = params[SYMANTECSA_ACTION_PARAM_START_TIME]
         end_time = params[SYMANTECSA_ACTION_PARAM_END_TIME]
-        name = params[SYMANTECSA_ACTION_PARAM_FILENAME]
+        name = os.path.basename(params[SYMANTECSA_ACTION_PARAM_FILENAME])
         filter = params[SYMANTECSA_ACTION_PARAM_FILTER]
 
         # validation for start time and end time
