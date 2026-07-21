@@ -20,6 +20,14 @@ import requests
 
 
 DEFAULT_REQUEST_TIMEOUT = 60  # in seconds
+MAX_PCAP_DOWNLOAD_SIZE = 100 * 1024 * 1024
+
+
+def _remove_partial_download(path):
+    try:
+        os.remove(path)
+    except OSError:
+        pass
 
 
 class SoleraConnector:
@@ -100,10 +108,33 @@ class SoleraConnector:
         if download:
             if not f.ok:
                 return {"resultCode": f"HTTP_{f.status_code}", "errors": [f.reason]}
+            try:
+                content_length = int(f.headers.get("Content-Length", 0))
+            except (TypeError, ValueError):
+                content_length = 0
+            if content_length > MAX_PCAP_DOWNLOAD_SIZE:
+                return {
+                    "resultCode": "DOWNLOAD_SIZE_LIMIT_EXCEEDED",
+                    "errors": ["PCAP download exceeds the 100 MiB size limit"],
+                }
             chunk_size = 1000
-            with open(download, "wb") as dfile:
-                for chunk in f.iter_content(chunk_size):
-                    dfile.write(chunk)
+            bytes_written = 0
+            try:
+                with open(download, "wb") as dfile:
+                    for chunk in f.iter_content(chunk_size):
+                        bytes_written += len(chunk)
+                        if bytes_written > MAX_PCAP_DOWNLOAD_SIZE:
+                            break
+                        dfile.write(chunk)
+            except Exception:
+                _remove_partial_download(download)
+                raise
+            if bytes_written > MAX_PCAP_DOWNLOAD_SIZE:
+                _remove_partial_download(download)
+                return {
+                    "resultCode": "DOWNLOAD_SIZE_LIMIT_EXCEEDED",
+                    "errors": ["PCAP download exceeds the 100 MiB size limit"],
+                }
             filesize = os.path.getsize(download)
             return {"download_file": download, "filesize": filesize}
         else:  # Else return the data

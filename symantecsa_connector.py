@@ -211,13 +211,14 @@ class SymantecsaConnector(BaseConnector):
         # For file size zero
         try:
             with open(file_path, "rb") as temp_file:
-                temp_file_data = temp_file.read()
+                temp_file_data = temp_file.read(len(SYMANTECSA_EMPTY_FILE))
         except Exception as e:
             error_message = self._get_error_message_from_exception(e)
             return action_result.set_status(phantom.APP_ERROR, status_message=f"Error : {error_message}")
 
         # For empty file
-        if (not os.path.getsize(file_path)) or temp_file_data == SYMANTECSA_EMPTY_FILE:
+        file_size = os.path.getsize(file_path)
+        if (not file_size) or (file_size == len(SYMANTECSA_EMPTY_FILE) and temp_file_data == SYMANTECSA_EMPTY_FILE):
             # Delete file
             os.unlink(file_path)
             return action_result.set_status(phantom.APP_ERROR, status_message=SYMANTECSA_NO_DATA_FOUND_MESSAGE)
