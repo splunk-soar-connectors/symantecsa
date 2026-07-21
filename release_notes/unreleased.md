@@ -1,2 +1,1 @@
 **Unreleased**
-* Limited PCAP downloads to 100 MiB to protect SOAR vault capacity.
